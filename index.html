@@ -101,6 +101,18 @@
       background: rgba(255, 220, 150, 1);
       transform: scale(1.2);
     }
+    .control-group input[type="range"]:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .control-group input[type="range"]:disabled::-webkit-slider-thumb {
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .control-group input[type="range"]:disabled::-moz-range-thumb {
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.3);
+    }
     .control-group button {
       width: 100%;
       padding: 10px;
@@ -122,6 +134,40 @@
     .control-group button:active {
       transform: scale(0.98);
     }
+    .control-group .radio-group {
+      display: flex;
+      gap: 10px;
+    }
+    .control-group .radio-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      background: rgba(255, 200, 100, 0.1);
+      border: 1px solid rgba(255, 200, 100, 0.3);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-group .radio-option:hover {
+      background: rgba(255, 200, 100, 0.2);
+      border-color: rgba(255, 200, 100, 0.5);
+    }
+    .control-group .radio-option input[type="radio"] {
+      cursor: pointer;
+      accent-color: rgba(255, 200, 100, 0.9);
+    }
+    .control-group .radio-option label {
+      margin: 0;
+      cursor: pointer;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .control-group .radio-option input[type="radio"]:checked + label {
+      color: rgba(255, 220, 150, 1);
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -142,6 +188,10 @@
       <input type="range" id="armSwing" min="0" max="1.5" step="0.05" value="0.75">
     </div>
     <div class="control-group">
+      <label>Camera Orbit</label>
+      <input type="range" id="robotRotation" min="-180" max="180" step="5" value="0">
+    </div>
+    <div class="control-group">
       <label>FOV (Field of View)</label>
       <input type="range" id="cameraFOV" min="20" max="120" step="5" value="75">
     </div>
@@ -150,7 +200,17 @@
       <input type="range" id="lightIntensity" min="0" max="2" step="0.1" value="1">
     </div>
     <div class="control-group">
-      <button id="cameraToggle">Orthographic</button>
+      <label>Camera Mode</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" id="orthographic" name="cameraMode" value="orthographic" checked>
+          <label for="orthographic">Orthographic</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="perspective" name="cameraMode" value="perspective">
+          <label for="perspective">Perspective</label>
+        </div>
+      </div>
     </div>
   </div>
 

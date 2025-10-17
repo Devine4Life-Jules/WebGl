@@ -25,9 +25,22 @@ loader.load('shader.frag', (fragmentShader) => {
 let uniforms, mesh;
 let cameraOffset = { x: 0, y: 2.0 };
 let cameraDistance = 12.0;
+let cameraOrbitAngle = 0; // Camera orbit angle in radians
 let isShaking = false;
 let shakeIntensity = 0;
 let shakeDecay = 0.95;
+
+// Helper function to calculate camera position from orbit angle
+function updateCameraPosition() {
+  // Calculate camera position in a circle around origin
+  const x = Math.sin(cameraOrbitAngle) * cameraDistance + cameraOffset.x;
+  const z = Math.cos(cameraOrbitAngle) * cameraDistance;
+  const y = cameraOffset.y;
+  
+  if (!isShaking) {
+    uniforms.iCameraPos.value.set(x, y, z);
+  }
+}
 
 const setupShader = (fragmentShader) => {
   uniforms = {
@@ -65,9 +78,11 @@ function start() {
   // Setup slider event listeners
   const walkSpeed = document.getElementById('walkSpeed');
   const armSwing = document.getElementById('armSwing');
-  const cameraToggle = document.getElementById('cameraToggle');
+  const orthographicRadio = document.getElementById('orthographic');
+  const perspectiveRadio = document.getElementById('perspective');
   const cameraFOVSlider = document.getElementById('cameraFOV');
   const lightIntensitySlider = document.getElementById('lightIntensity');
+  const robotRotationSlider = document.getElementById('robotRotation');
 
   walkSpeed.addEventListener('input', (e) => {
     uniforms.iWalkSpeed.value = parseFloat(e.target.value);
@@ -87,15 +102,26 @@ function start() {
     uniforms.iLightIntensity.value = parseFloat(e.target.value);
   });
 
-  // Camera toggle button
-  let isPerspective = false;
-  cameraToggle.addEventListener('click', () => {
-    isPerspective = !isPerspective;
-    uniforms.iPerspective.value = isPerspective ? 1.0 : 0.0;
-    cameraToggle.textContent = isPerspective ? 'Perspective' : 'Orthographic';
+  // Robot rotation slider (convert degrees to radians)
+  robotRotationSlider.addEventListener('input', (e) => {
+    const degrees = parseFloat(e.target.value);
+    cameraOrbitAngle = degrees * Math.PI / 180.0;
+    updateCameraPosition();
   });
 
-  // Keyboard controls for camera
+  // Camera mode radio buttons
+  orthographicRadio.addEventListener('change', () => {
+    uniforms.iPerspective.value = 0.0;
+    cameraFOVSlider.disabled = true;
+  });
+  
+  perspectiveRadio.addEventListener('change', () => {
+    uniforms.iPerspective.value = 1.0;
+    cameraFOVSlider.disabled = false;
+  });
+  
+  // Initialize FOV slider state (disabled by default since orthographic is default)
+  cameraFOVSlider.disabled = true;  // Keyboard controls for camera
   window.addEventListener('keydown', (e) => {
     const panSpeed = 0.5;
     const zoomSpeed = 0.5;
@@ -121,9 +147,9 @@ function start() {
         break;
     }
     
-    // Only update if not shaking (shake will handle updates in render loop)
+    // Update camera position after movement
     if (!isShaking) {
-      uniforms.iCameraPos.value.set(cameraOffset.x, cameraOffset.y, cameraDistance);
+      updateCameraPosition();
     }
   });
 
@@ -143,11 +169,15 @@ const render = (time) => {
     const shakeY = (Math.random() - 0.5) * shakeIntensity;
     const shakeZ = (Math.random() - 0.5) * shakeIntensity;
     
-    // Update camera position with shake offset
+    // Calculate base camera position from orbit
+    const baseX = Math.sin(cameraOrbitAngle) * cameraDistance + cameraOffset.x;
+    const baseZ = Math.cos(cameraOrbitAngle) * cameraDistance;
+    
+    // Apply shake to orbiting camera
     uniforms.iCameraPos.value.set(
-      cameraOffset.x + shakeX,
+      baseX + shakeX,
       cameraOffset.y + shakeY,
-      cameraDistance + shakeZ
+      baseZ + shakeZ
     );
     
     // Pass shake intensity to shader for geometry morphing
@@ -158,7 +188,7 @@ const render = (time) => {
     // Reset to base position when shake ends
     isShaking = false;
     shakeIntensity = 0;
-    uniforms.iCameraPos.value.set(cameraOffset.x, cameraOffset.y, cameraDistance);
+    updateCameraPosition();
     uniforms.iShakeIntensity.value = 0.0;
   }
 
