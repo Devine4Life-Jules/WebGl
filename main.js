@@ -46,15 +46,15 @@ const setupShader = (fragmentShader) => {
   uniforms = {
     iTime: { value: 0 },
     iResolution: { value: new THREE.Vector3() },
-    iMouse: { value: new THREE.Vector4() },
-    iWalkSpeed: { value: 1.5 },
-    iArmSwing: { value: 0.75 },
-    iCameraPos: { value: new THREE.Vector3(0.0, 2.0, 12.0) },
-    iShakeIntensity: { value: 0.0 },
-    iPerspective: { value: 0.0 },
-    iFOV: { value: 75.0 },
-    iLightIntensity: { value: 1.0 }
-  };
+    iMouse: { value: new THREE.Vector2(0.5, 0.5) },
+      iWalkSpeed: { value: 1.5 },
+      iArmSwing: { value: 0.75 },
+      iCameraPos: { value: new THREE.Vector3(0, 2, 12) },
+      iShakeIntensity: { value: 0.0 },
+      iPerspective: { value: 1.0 }, // Start in perspective mode
+      iFOV: { value: 75.0 },
+      iLightIntensity: { value: 1.0 },
+    };
 
   const material = new THREE.ShaderMaterial({
     fragmentShader,
@@ -120,8 +120,8 @@ function start() {
     cameraFOVSlider.disabled = false;
   });
   
-  // Initialize FOV slider state (disabled by default since orthographic is default)
-  cameraFOVSlider.disabled = true;  // Keyboard controls for camera
+  // Initialize FOV slider state (enabled by default since perspective is default)
+  cameraFOVSlider.disabled = false;  // Keyboard controls for camera
   window.addEventListener('keydown', (e) => {
     const panSpeed = 0.5;
     const zoomSpeed = 0.5;
