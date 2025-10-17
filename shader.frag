@@ -6,6 +6,7 @@ uniform vec4 iMouse;
 uniform float iWalkSpeed;
 uniform float iArmSwing;
 uniform vec3 iCameraPos;
+uniform float iShakeIntensity;
 
 const int maxSteps = 64;
 const float hitThreshold = 0.001;
@@ -75,15 +76,21 @@ float scene(vec3 p) {
   hp = (vec4(hp, 1.0)*headMat).xyz;
   d = _union(d, sdBox(hp, vec3(1.5, 1.0, 1.0)));
 
+  // Eye scaling: blink animation + shake effect (makes eyes bigger when shaking)
   vec3 eyeScale = vec3(1.0);
-  eyeScale.y *= 1.0 - smoothstep(0.8, 1.0, noise(t*5.0));
-  d = difference(d, sphere((hp - vec3(0.6, 0.2, 1.0))/eyeScale, 0.15));
-  d = difference(d, sphere((hp - vec3(-0.6, 0.2, 1.0))/eyeScale, 0.15));
+  eyeScale.y *= 1.0 - smoothstep(0.8, 1.0, noise(t*5.0)); // Blink
+  
+  // Increase eye size during shake (multiply radius by 1 + shake intensity)
+  float eyeRadius = 0.15 * (1.0 + iShakeIntensity * 2.0); // 2.0 = multiplier for effect strength
+  d = difference(d, sphere((hp - vec3(0.6, 0.2, 1.0))/eyeScale, eyeRadius));
+  d = difference(d, sphere((hp - vec3(-0.6, 0.2, 1.0))/eyeScale, eyeRadius));
 
+  // Mouth with shake effect - opens wider when shaking
+  float mouthHeight = 0.05 + iShakeIntensity * 0.4; // Base 0.05, grows to ~0.25 at peak shake
   if (iMouse.z > 0.0)
     d = difference(d, sdBox(hp - vec3(0.0, -0.4, 1.0), vec3(0.2, 0.1, 0.1)));
   else
-    d = difference(d, sdBox(hp - vec3(0.0, -0.4, 1.0), vec3(0.25, 0.05, 0.1)));
+    d = difference(d, sdBox(hp - vec3(0.0, -0.4, 1.0), vec3(0.25, mouthHeight, 0.1)));
 
   vec3 bp = p;
   bp = rotateY(bp, -target.x*0.05);

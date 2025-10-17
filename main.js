@@ -25,6 +25,9 @@ loader.load('shader.frag', (fragmentShader) => {
 let uniforms, mesh;
 let cameraOffset = { x: 0, y: 2.0 };
 let cameraDistance = 12.0;
+let isShaking = false;
+let shakeIntensity = 3;
+let shakeDecay = 0.95;
 
 const setupShader = (fragmentShader) => {
   uniforms = {
@@ -33,7 +36,8 @@ const setupShader = (fragmentShader) => {
     iMouse: { value: new THREE.Vector4() },
     iWalkSpeed: { value: 1.5 },
     iArmSwing: { value: 0.75 },
-    iCameraPos: { value: new THREE.Vector3(0.0, 2.0, 12.0) }
+    iCameraPos: { value: new THREE.Vector3(0.0, 2.0, 12.0) },
+    iShakeIntensity: { value: 0.0 }
   };
 
   const material = new THREE.ShaderMaterial({
@@ -85,9 +89,18 @@ function start() {
       case 'ArrowDown':
         cameraDistance = Math.min(25.0, cameraDistance + zoomSpeed);
         break;
+      case ' ':
+      case 'Spacebar':
+        // Trigger 3D camera shake
+        isShaking = true;
+        shakeIntensity = 0.5; // Adjust for stronger/weaker shake
+        break;
     }
     
-    uniforms.iCameraPos.value.set(cameraOffset.x, cameraOffset.y, cameraDistance);
+    // Only update if not shaking (shake will handle updates in render loop)
+    if (!isShaking) {
+      uniforms.iCameraPos.value.set(cameraOffset.x, cameraOffset.y, cameraDistance);
+    }
   });
 
   requestAnimationFrame(render);
@@ -98,6 +111,31 @@ const render = (time) => {
   if (resizeRendererToDisplaySize(renderer)) {
     const canvas = renderer.domElement;
     uniforms.iResolution.value.set(canvas.width, canvas.height, 1.0);
+  }
+
+  // Apply 3D camera shake - moves actual camera position in scene
+  if (isShaking && shakeIntensity > 0.01) {
+    const shakeX = (Math.random() - 0.5) * shakeIntensity;
+    const shakeY = (Math.random() - 0.5) * shakeIntensity;
+    const shakeZ = (Math.random() - 0.5) * shakeIntensity;
+    
+    // Update camera position with shake offset
+    uniforms.iCameraPos.value.set(
+      cameraOffset.x + shakeX,
+      cameraOffset.y + shakeY,
+      cameraDistance + shakeZ
+    );
+    
+    // Pass shake intensity to shader for geometry morphing
+    uniforms.iShakeIntensity.value = shakeIntensity;
+    
+    shakeIntensity *= shakeDecay; // Gradually reduce shake
+  } else {
+    // Reset to base position when shake ends
+    isShaking = false;
+    shakeIntensity = 0;
+    uniforms.iCameraPos.value.set(cameraOffset.x, cameraOffset.y, cameraDistance);
+    uniforms.iShakeIntensity.value = 0.0;
   }
 
   uniforms.iTime.value = time;
