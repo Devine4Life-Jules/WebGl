@@ -26,7 +26,7 @@ let uniforms, mesh;
 let cameraOffset = { x: 0, y: 2.0 };
 let cameraDistance = 12.0;
 let isShaking = false;
-let shakeIntensity = 8;
+let shakeIntensity = 0;
 let shakeDecay = 0.95;
 
 const setupShader = (fragmentShader) => {
@@ -39,7 +39,8 @@ const setupShader = (fragmentShader) => {
     iCameraPos: { value: new THREE.Vector3(0.0, 2.0, 12.0) },
     iShakeIntensity: { value: 0.0 },
     iPerspective: { value: 0.0 },
-    iFOV: { value: 75.0 }
+    iFOV: { value: 75.0 },
+    iLightIntensity: { value: 1.0 }
   };
 
   const material = new THREE.ShaderMaterial({
@@ -66,6 +67,7 @@ function start() {
   const armSwing = document.getElementById('armSwing');
   const cameraToggle = document.getElementById('cameraToggle');
   const cameraFOVSlider = document.getElementById('cameraFOV');
+  const lightIntensitySlider = document.getElementById('lightIntensity');
 
   walkSpeed.addEventListener('input', (e) => {
     uniforms.iWalkSpeed.value = parseFloat(e.target.value);
@@ -78,6 +80,11 @@ function start() {
   // FOV slider
   cameraFOVSlider.addEventListener('input', (e) => {
     uniforms.iFOV.value = parseFloat(e.target.value);
+  });
+
+  // Light intensity slider
+  lightIntensitySlider.addEventListener('input', (e) => {
+    uniforms.iLightIntensity.value = parseFloat(e.target.value);
   });
 
   // Camera toggle button

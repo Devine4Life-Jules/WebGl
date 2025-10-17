@@ -9,6 +9,7 @@ uniform vec3 iCameraPos;
 uniform float iShakeIntensity;
 uniform float iPerspective;
 uniform float iFOV;
+uniform float iLightIntensity;
 
 const int maxSteps = 64;
 const float hitThreshold = 0.001;
@@ -166,7 +167,7 @@ vec3 shade(vec3 pos, vec3 n, vec3 eyePos) {
   vec3 sky = mix(vec3(0.5, 0.2, 0.0), vec3(0.6, 0.8, 1.0), n.y*0.5+0.5);
   vec3 c = sky*0.5*ao;
   const vec3 lightPos = vec3(5.0, 5.0, 5.0);
-  const vec3 lightColor = vec3(0.5, 0.5, 0.1);
+  vec3 lightColor = vec3(0.5, 0.5, 0.1) * iLightIntensity; // Apply light intensity
   vec3 l = lightPos - pos;
   float dist = length(l);
   l /= dist;
@@ -190,12 +191,20 @@ void main() {
   vec3 rd, ro;
   if (iPerspective > 0.5) {
     // Perspective: rays diverge from camera using FOV
+    // Camera looks at origin (0,0,0) to see both robot and ground
     float fov = iFOV * 3.14159 / 180.0; // Convert degrees to radians
-    float focalLength = 1.0 / tan(fov * 0.5);
-    rd = normalize(vec3(asp * pixel.x, pixel.y, -focalLength));
+    float scale = tan(fov * 0.5);
+    
+    // Create view direction - camera looks slightly down at scene center
+    vec3 lookAt = vec3(0.0, 1.5, 0.0); // Look at robot's center (slightly above ground)
+    vec3 forward = normalize(lookAt - iCameraPos);
+    vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
+    vec3 up = cross(forward, right);
+    
+    rd = normalize(forward + right * pixel.x * scale * asp + up * pixel.y * scale);
     ro = iCameraPos;
   } else {
-    // Orthographic: parallel rays
+    // Orthographic: parallel rays (no FOV)
     rd = normalize(vec3(0.0, 0.0, -1.0));
     ro = iCameraPos + vec3(asp * pixel.x * 5.0, pixel.y * 5.0, 0.0);
   }
