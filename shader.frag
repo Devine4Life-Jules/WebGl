@@ -7,6 +7,8 @@ uniform float iWalkSpeed;
 uniform float iArmSwing;
 uniform vec3 iCameraPos;
 uniform float iShakeIntensity;
+uniform float iPerspective;
+uniform float iFOV;
 
 const int maxSteps = 64;
 const float hitThreshold = 0.001;
@@ -183,8 +185,20 @@ void main() {
   vec2 fragCoord = gl_FragCoord.xy;
   vec2 pixel = (fragCoord / iResolution.xy)*2.0 - 1.0;
   float asp = iResolution.x / iResolution.y;
-  vec3 rd = normalize(vec3(asp*pixel.x, pixel.y, -2.0));
-  vec3 ro = iCameraPos;
+  
+  // Ray direction: perspective vs orthographic
+  vec3 rd, ro;
+  if (iPerspective > 0.5) {
+    // Perspective: rays diverge from camera using FOV
+    float fov = iFOV * 3.14159 / 180.0; // Convert degrees to radians
+    float focalLength = 1.0 / tan(fov * 0.5);
+    rd = normalize(vec3(asp * pixel.x, pixel.y, -focalLength));
+    ro = iCameraPos;
+  } else {
+    // Orthographic: parallel rays
+    rd = normalize(vec3(0.0, 0.0, -1.0));
+    ro = iCameraPos + vec3(asp * pixel.x * 5.0, pixel.y * 5.0, 0.0);
+  }
 
   vec2 mouse = iMouse.xy / iResolution.xy;
   float roty = 0.0;

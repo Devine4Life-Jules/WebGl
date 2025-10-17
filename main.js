@@ -26,7 +26,7 @@ let uniforms, mesh;
 let cameraOffset = { x: 0, y: 2.0 };
 let cameraDistance = 12.0;
 let isShaking = false;
-let shakeIntensity = 3;
+let shakeIntensity = 8;
 let shakeDecay = 0.95;
 
 const setupShader = (fragmentShader) => {
@@ -37,7 +37,9 @@ const setupShader = (fragmentShader) => {
     iWalkSpeed: { value: 1.5 },
     iArmSwing: { value: 0.75 },
     iCameraPos: { value: new THREE.Vector3(0.0, 2.0, 12.0) },
-    iShakeIntensity: { value: 0.0 }
+    iShakeIntensity: { value: 0.0 },
+    iPerspective: { value: 0.0 },
+    iFOV: { value: 75.0 }
   };
 
   const material = new THREE.ShaderMaterial({
@@ -62,6 +64,8 @@ function start() {
   // Setup slider event listeners
   const walkSpeed = document.getElementById('walkSpeed');
   const armSwing = document.getElementById('armSwing');
+  const cameraToggle = document.getElementById('cameraToggle');
+  const cameraFOVSlider = document.getElementById('cameraFOV');
 
   walkSpeed.addEventListener('input', (e) => {
     uniforms.iWalkSpeed.value = parseFloat(e.target.value);
@@ -69,6 +73,19 @@ function start() {
 
   armSwing.addEventListener('input', (e) => {
     uniforms.iArmSwing.value = parseFloat(e.target.value);
+  });
+
+  // FOV slider
+  cameraFOVSlider.addEventListener('input', (e) => {
+    uniforms.iFOV.value = parseFloat(e.target.value);
+  });
+
+  // Camera toggle button
+  let isPerspective = false;
+  cameraToggle.addEventListener('click', () => {
+    isPerspective = !isPerspective;
+    uniforms.iPerspective.value = isPerspective ? 1.0 : 0.0;
+    cameraToggle.textContent = isPerspective ? 'Perspective' : 'Orthographic';
   });
 
   // Keyboard controls for camera
