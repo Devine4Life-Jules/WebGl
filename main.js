@@ -55,6 +55,8 @@ const setupShader = (fragmentShader) => {
       iFOV: { value: 75.0 },
       iLightIntensity: { value: 1.0 },
       iSphereHead: { value: 0.0 }, // 0 = box head, 1 = sphere head
+      iRoughness: { value: 0.5 }, // 0 = smooth/shiny, 1 = rough/matte
+      iMetallic: { value: 0.2 }, // 0 = non-metallic, 1 = metallic
     };
 
   const material = new THREE.ShaderMaterial({
@@ -87,6 +89,8 @@ const start = () => {
   const shakeButton = document.getElementById('shakeButton');
   const boxHeadRadio = document.getElementById('boxHead');
   const sphereHeadRadio = document.getElementById('sphereHead');
+  const roughnessSlider = document.getElementById('roughness');
+  const metallicSlider = document.getElementById('metallic');
 
   walkSpeed.addEventListener('input', (e) => {
     uniforms.iWalkSpeed.value = parseFloat(e.target.value);
@@ -104,6 +108,16 @@ const start = () => {
   // Light intensity slider
   lightIntensitySlider.addEventListener('input', (e) => {
     uniforms.iLightIntensity.value = parseFloat(e.target.value);
+  });
+
+  // Roughness slider
+  roughnessSlider.addEventListener('input', (e) => {
+    uniforms.iRoughness.value = parseFloat(e.target.value);
+  });
+
+  // Metallic slider
+  metallicSlider.addEventListener('input', (e) => {
+    uniforms.iMetallic.value = parseFloat(e.target.value);
   });
 
   // Robot rotation slider (convert degrees to radians)

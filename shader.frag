@@ -11,6 +11,8 @@ uniform float iPerspective;
 uniform float iFOV;
 uniform float iLightIntensity;
 uniform float iSphereHead;
+uniform float iRoughness;
+uniform float iMetallic;
 
 const int maxSteps = 64;
 const float hitThreshold = 0.001;
@@ -183,10 +185,27 @@ vec3 shade(vec3 pos, vec3 n, vec3 eyePos) {
   vec3 l = lightPos - pos;
   float dist = length(l);
   l /= dist;
+  
+  // Diffuse lighting
   float diff = max(0.0, dot(n, l));
   float shadow = softShadow(pos, l, 0.1, dist, 5.0);
   diff *= shadow;
-  c += diff * lightColor;
+  
+  // Specular highlights based on metallic and roughness
+  vec3 viewDir = normalize(eyePos - pos);
+  vec3 reflectDir = reflect(-l, n);
+  float specPower = mix(64.0, 4.0, iRoughness); // Rougher = softer highlights
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), specPower);
+  
+  // Metallic determines specular color (metallic uses surface color, non-metallic uses white)
+  vec3 baseColor = vec3(0.8, 0.7, 0.5); // Robot surface color
+  vec3 specularColor = mix(vec3(1.0), baseColor, iMetallic);
+  
+  // Specular intensity controlled by roughness (smoother = more specular)
+  vec3 specular = spec * specularColor * lightColor * (1.0 - iRoughness * 0.7);
+  
+  // Combine diffuse and specular
+  c += diff * lightColor + specular * iMetallic;
   return c;
 }
 
