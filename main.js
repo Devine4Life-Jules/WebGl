@@ -140,9 +140,7 @@ const start = () => {
     uniforms.iLightIntensity.value = parseFloat(e.target.value);
   });
 
-  lightIntensitySlider.addEventListener('input', (e) => {
-    uniforms.iLightIntensity.value = parseFloat(e.target.value);
-  });
+
 
   orthographicRadio.addEventListener('change', () => {
     uniforms.iPerspective.value = 0.0;
@@ -177,6 +175,24 @@ const start = () => {
   });
   
   shakeButton.addEventListener('mouseleave', () => {
+    CameraState.shake.active = false;
+    CameraState.shake.intensity = 0;
+  });
+
+  shakeButton.addEventListener('touchstart', (e) => {
+    e.preventDefault(); 
+    CameraState.shake.active = true;
+    CameraState.shake.intensity = SHAKE_INTENSITY.BUTTON;
+  });
+  
+  shakeButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    CameraState.shake.active = false;
+    CameraState.shake.intensity = 0;
+  });
+  
+  shakeButton.addEventListener('touchcancel', (e) => {
+    e.preventDefault();
     CameraState.shake.active = false;
     CameraState.shake.intensity = 0;
   });
