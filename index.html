@@ -15,7 +15,6 @@
   </div>
 
   <div id="controls">
-    <!-- Animation Column -->
     <div class="control-column">
       <div class="column-title">🤖 Animation</div>
       <div class="control-group">
@@ -28,7 +27,6 @@
       </div>
     </div>
 
-    <!-- Camera Column -->
     <div class="control-column">
       <div class="column-title">📷 Camera</div>
       <div class="control-group">
@@ -45,11 +43,11 @@
         </div>
       </div>
       <div class="control-group">
-        <label>Camera Orbit (Arrow Keys)</label>
+        <label>Camera Orbit (← →)</label>
         <input type="range" id="robotRotation" min="-180" max="180" step="5" value="0">
       </div>
       <div class="control-group">
-        <label>FOV (Field of View)</label>
+        <label>FOV - Field of View (↑ ↓)</label>
         <input type="range" id="cameraFOV" min="20" max="120" step="5" value="75">
       </div>
       <div class="control-group">
@@ -57,7 +55,6 @@
       </div>
     </div>
 
-    <!-- Appearance Column -->
     <div class="control-column">
       <div class="column-title">🎨 Appearance</div>
       <div class="control-group">
@@ -79,11 +76,10 @@
       </div>
       <div class="control-group">
         <label>Metallic</label>
-        <input type="range" id="metallic" min="0" max="3" step="0.05" value="0.2">
+        <input type="range" id="metallic" min="0" max="1" step="0.05" value="0.2">
       </div>
     </div>
 
-    <!-- Lighting Column -->
     <div class="control-column">
       <div class="column-title">💡 Lighting</div>
       <div class="control-group">

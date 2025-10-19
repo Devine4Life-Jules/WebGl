@@ -1,6 +1,34 @@
 import * as THREE from 'three';
 
+const SHAKE_INTENSITY = {
+  KEYBOARD: 1.2,
+  BUTTON: 0.5
+};
+
+const CAMERA_CONTROLS = {
+  ORBIT_SPEED_DEG: 5,
+  FOV_SPEED_DEG: 2
+};
+
+const CameraState = {
+  offset: { x: 0, y: 2.0 },
+  distance: 12.0,
+  orbitAngle: 0,
+  shake: {
+    active: false,
+    intensity: 0,
+    decay: 0.95
+  }
+};
+
 const canvas = document.querySelector('#c');
+if (!canvas) throw new Error('Canvas element #c not found');
+
+if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) {
+  alert('WebGL is not supported in your browser. Please try a modern browser.');
+  throw new Error('WebGL not supported');
+}
+
 const renderer = new THREE.WebGLRenderer({ canvas });
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -23,41 +51,33 @@ loader.load('shader.frag', (fragmentShader) => {
 });
 
 let uniforms, mesh;
-let cameraOffset = { x: 0, y: 2.0 };
-let cameraDistance = 12.0;
-let cameraOrbitAngle = 0; 
-let isShaking = false;
-let shakeIntensity = 0;
-let shakeDecay = 0.95;
 
-
-const updateCameraPosition = () =>  {
+const updateCameraPosition = () => {
+  const x = Math.sin(CameraState.orbitAngle) * CameraState.distance + CameraState.offset.x;
+  const z = Math.cos(CameraState.orbitAngle) * CameraState.distance;
+  const y = CameraState.offset.y;
   
-  const x = Math.sin(cameraOrbitAngle) * cameraDistance + cameraOffset.x;
-  const z = Math.cos(cameraOrbitAngle) * cameraDistance;
-  const y = cameraOffset.y;
-  
-  if (!isShaking) {
+  if (!CameraState.shake.active) {
     uniforms.iCameraPos.value.set(x, y, z);
   }
-}
+};
 
 const setupShader = (fragmentShader) => {
   uniforms = {
     iTime: { value: 0 },
     iResolution: { value: new THREE.Vector3() },
     iMouse: { value: new THREE.Vector2(0.5, 0.5) },
-      iWalkSpeed: { value: 1.5 },
-      iArmSwing: { value: 0.75 },
-      iCameraPos: { value: new THREE.Vector3(0, 2, 12) },
-      iShakeIntensity: { value: 0.0 },
-      iPerspective: { value: 1.0 }, 
-      iFOV: { value: 75.0 },
-      iLightIntensity: { value: 1.0 },
-      iSphereHead: { value: 0.0 }, 
-      iRoughness: { value: 0.5 }, 
-      iMetallic: { value: 0.2 }, 
-    };
+    iWalkSpeed: { value: 1.5 },
+    iArmSwing: { value: 0.75 },
+    iCameraPos: { value: new THREE.Vector3(0, 2, 12) },
+    iShakeIntensity: { value: 0.0 },
+    iPerspective: { value: 1.0 },
+    iFOV: { value: 75.0 },
+    iLightIntensity: { value: 1.0 },
+    iSphereHead: { value: 0.0 },
+    iRoughness: { value: 0.5 },
+    iMetallic: { value: 0.2 }
+  };
 
   const material = new THREE.ShaderMaterial({
     fragmentShader,
@@ -90,6 +110,12 @@ const start = () => {
   const roughnessSlider = document.getElementById('roughness');
   const metallicSlider = document.getElementById('metallic');
 
+  const resetCameraOrbit = () => {
+    CameraState.orbitAngle = 0;
+    robotRotationSlider.value = 0;
+    updateCameraPosition();
+  };
+
   walkSpeed.addEventListener('input', (e) => {
     uniforms.iWalkSpeed.value = parseFloat(e.target.value);
   });
@@ -102,8 +128,10 @@ const start = () => {
     uniforms.iFOV.value = parseFloat(e.target.value);
   });
 
-  lightIntensitySlider.addEventListener('input', (e) => {
-    uniforms.iLightIntensity.value = parseFloat(e.target.value);
+  robotRotationSlider.addEventListener('input', (e) => {
+    const degrees = parseFloat(e.target.value);
+    CameraState.orbitAngle = degrees * Math.PI / 180.0;
+    updateCameraPosition();
   });
 
   roughnessSlider.addEventListener('input', (e) => {
@@ -114,26 +142,24 @@ const start = () => {
     uniforms.iMetallic.value = parseFloat(e.target.value);
   });
 
-  robotRotationSlider.addEventListener('input', (e) => {
-    const degrees = parseFloat(e.target.value);
-    cameraOrbitAngle = degrees * Math.PI / 180.0;
-    updateCameraPosition();
+  lightIntensitySlider.addEventListener('input', (e) => {
+    uniforms.iLightIntensity.value = parseFloat(e.target.value);
+  });
+
+  lightIntensitySlider.addEventListener('input', (e) => {
+    uniforms.iLightIntensity.value = parseFloat(e.target.value);
   });
 
   orthographicRadio.addEventListener('change', () => {
     uniforms.iPerspective.value = 0.0;
     cameraFOVSlider.disabled = true;
-    cameraOrbitAngle = 0;
-    robotRotationSlider.value = 0;
-    updateCameraPosition();
+    resetCameraOrbit();
   });
   
   perspectiveRadio.addEventListener('change', () => {
     uniforms.iPerspective.value = 1.0;
     cameraFOVSlider.disabled = false;
-    cameraOrbitAngle = 0;
-    robotRotationSlider.value = 0;
-    updateCameraPosition();
+    resetCameraOrbit();
   });
   
   cameraFOVSlider.disabled = false;
@@ -147,45 +173,45 @@ const start = () => {
   });
   
   shakeButton.addEventListener('mousedown', () => {
-    isShaking = true;
-    shakeIntensity = 0.5; 
+    CameraState.shake.active = true;
+    CameraState.shake.intensity = SHAKE_INTENSITY.BUTTON;
   });
   
   shakeButton.addEventListener('mouseup', () => {
-    isShaking = false;
-    shakeIntensity = 0;
+    CameraState.shake.active = false;
+    CameraState.shake.intensity = 0;
   });
   
   shakeButton.addEventListener('mouseleave', () => {
-    isShaking = false;
-    shakeIntensity = 0;
+    CameraState.shake.active = false;
+    CameraState.shake.intensity = 0;
   });
-  
+
   window.addEventListener('keydown', (e) => {
-    const panSpeed = 0.5;
-    const zoomSpeed = 0.5;
-    
     switch(e.key) {
       case 'ArrowLeft':
-        cameraOffset.x -= panSpeed;
+        CameraState.orbitAngle -= CAMERA_CONTROLS.ORBIT_SPEED_DEG * Math.PI / 180;
+        robotRotationSlider.value = CameraState.orbitAngle * 180 / Math.PI;
         break;
       case 'ArrowRight':
-        cameraOffset.x += panSpeed;
+        CameraState.orbitAngle += CAMERA_CONTROLS.ORBIT_SPEED_DEG * Math.PI / 180;
+        robotRotationSlider.value = CameraState.orbitAngle * 180 / Math.PI;
         break;
       case 'ArrowUp':
-        cameraDistance = Math.max(3.0, cameraDistance - zoomSpeed);
+        uniforms.iFOV.value = Math.min(120, uniforms.iFOV.value + CAMERA_CONTROLS.FOV_SPEED_DEG);
+        cameraFOVSlider.value = uniforms.iFOV.value;
         break;
       case 'ArrowDown':
-        cameraDistance = Math.min(25.0, cameraDistance + zoomSpeed);
+        uniforms.iFOV.value = Math.max(20, uniforms.iFOV.value - CAMERA_CONTROLS.FOV_SPEED_DEG);
+        cameraFOVSlider.value = uniforms.iFOV.value;
         break;
       case ' ':
-      case 'Spacebar':
-        isShaking = true;
-        shakeIntensity = 1.2; 
+        CameraState.shake.active = true;
+        CameraState.shake.intensity = SHAKE_INTENSITY.KEYBOARD;
         break;
     }
     
-    if (!isShaking) {
+    if (!CameraState.shake.active) {
       updateCameraPosition();
     }
   });
@@ -200,26 +226,25 @@ const render = (time) => {
     uniforms.iResolution.value.set(canvas.width, canvas.height, 1.0);
   }
 
-  if (isShaking && shakeIntensity > 0.01) {
-    const shakeX = (Math.random() - 0.5) * shakeIntensity;
-    const shakeY = (Math.random() - 0.5) * shakeIntensity;
-    const shakeZ = (Math.random() - 0.5) * shakeIntensity;
+  if (CameraState.shake.active && CameraState.shake.intensity > 0.01) {
+    const shakeX = (Math.random() - 0.5) * CameraState.shake.intensity;
+    const shakeY = (Math.random() - 0.5) * CameraState.shake.intensity;
+    const shakeZ = (Math.random() - 0.5) * CameraState.shake.intensity;
     
-    const baseX = Math.sin(cameraOrbitAngle) * cameraDistance + cameraOffset.x;
-    const baseZ = Math.cos(cameraOrbitAngle) * cameraDistance;
+    const baseX = Math.sin(CameraState.orbitAngle) * CameraState.distance + CameraState.offset.x;
+    const baseZ = Math.cos(CameraState.orbitAngle) * CameraState.distance;
     
     uniforms.iCameraPos.value.set(
       baseX + shakeX,
-      cameraOffset.y + shakeY,
+      CameraState.offset.y + shakeY,
       baseZ + shakeZ
     );
     
-    uniforms.iShakeIntensity.value = shakeIntensity;
-    
-    shakeIntensity *= shakeDecay; 
+    uniforms.iShakeIntensity.value = CameraState.shake.intensity;
+    CameraState.shake.intensity *= CameraState.shake.decay;
   } else {
-    isShaking = false;
-    shakeIntensity = 0;
+    CameraState.shake.active = false;
+    CameraState.shake.intensity = 0;
     updateCameraPosition();
     uniforms.iShakeIntensity.value = 0.0;
   }
@@ -227,7 +252,7 @@ const render = (time) => {
   uniforms.iTime.value = time;
   renderer.render(scene, camera);
   requestAnimationFrame(render);
-}
+};
 
 const resizeRendererToDisplaySize = (renderer) => {
   const canvas = renderer.domElement;
