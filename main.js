@@ -22,12 +22,6 @@ const CameraState = {
 };
 
 const canvas = document.querySelector('#c');
-if (!canvas) throw new Error('Canvas element #c not found');
-
-if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) {
-  alert('WebGL is not supported in your browser. Please try a modern browser.');
-  throw new Error('WebGL not supported');
-}
 
 const renderer = new THREE.WebGLRenderer({ canvas });
 const scene = new THREE.Scene();
