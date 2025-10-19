@@ -131,11 +131,19 @@ const start = () => {
   orthographicRadio.addEventListener('change', () => {
     uniforms.iPerspective.value = 0.0;
     cameraFOVSlider.disabled = true;
+    // Reset camera orbit
+    cameraOrbitAngle = 0;
+    robotRotationSlider.value = 0;
+    updateCameraPosition();
   });
   
   perspectiveRadio.addEventListener('change', () => {
     uniforms.iPerspective.value = 1.0;
     cameraFOVSlider.disabled = false;
+    // Reset camera orbit
+    cameraOrbitAngle = 0;
+    robotRotationSlider.value = 0;
+    updateCameraPosition();
   });
   
   // Initialize FOV slider state (enabled by default since perspective is default)
@@ -186,13 +194,11 @@ const start = () => {
         break;
       case ' ':
       case 'Spacebar':
-        // Trigger 3D camera shake
         isShaking = true;
-        shakeIntensity = 1.2           ; // Adjust for stronger/weaker shake
+        shakeIntensity = 1.2; 
         break;
     }
     
-    // Update camera position after movement
     if (!isShaking) {
       updateCameraPosition();
     }
