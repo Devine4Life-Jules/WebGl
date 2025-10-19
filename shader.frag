@@ -179,7 +179,9 @@ vec3 shade(vec3 pos, vec3 n, vec3 eyePos) {
 }
 
 vec3 background(vec3 rd) {
-  return mix(vec3(0.5, 0.2, 0.0), vec3(0.8, 0.8, 1.0), rd.y*0.5+0.5);
+  // Background gradient affected by light intensity
+  vec3 bgGradient = mix(vec3(0.5, 0.2, 0.0), vec3(0.8, 0.8, 1.0), rd.y*0.5+0.5);
+  return bgGradient * iLightIntensity;
 }
 
 void main() {
