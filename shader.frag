@@ -10,6 +10,7 @@ uniform float iShakeIntensity;
 uniform float iPerspective;
 uniform float iFOV;
 uniform float iLightIntensity;
+uniform float iSphereHead;
 
 const int maxSteps = 64;
 const float hitThreshold = 0.001;
@@ -77,23 +78,34 @@ float scene(vec3 p) {
 
   vec3 hp = p - vec3(0.0, 4.0, 0.0);
   hp = (vec4(hp, 1.0)*headMat).xyz;
-  d = _union(d, sdBox(hp, vec3(1.5, 1.0, 1.0)));
+  
+  // Switch between box head and sphere head
+  float headShape;
+  if (iSphereHead > 0.5) {
+    headShape = sphere(hp, 1.3); // Sphere head with radius 1.3
+  } else {
+    headShape = sdBox(hp, vec3(1.5, 1.0, 1.0)); // Box head
+  }
+  d = _union(d, headShape);
 
   // Eye scaling: blink animation + shake effect (makes eyes bigger when shaking)
   vec3 eyeScale = vec3(1.0);
   eyeScale.y *= 1.0 - smoothstep(0.8, 1.0, noise(t*5.0)); // Blink
   
+  // Adjust eye and mouth depth based on head shape
+  float faceDepth = iSphereHead > 0.5 ? 1.25 : 1.0; // Push features forward on sphere head
+  
   // Increase eye size during shake (multiply radius by 1 + shake intensity)
   float eyeRadius = 0.15 * (1.0 + iShakeIntensity * 2.0); // 2.0 = multiplier for effect strength
-  d = difference(d, sphere((hp - vec3(0.6, 0.2, 1.0))/eyeScale, eyeRadius));
-  d = difference(d, sphere((hp - vec3(-0.6, 0.2, 1.0))/eyeScale, eyeRadius));
+  d = difference(d, sphere((hp - vec3(0.6, 0.2, faceDepth))/eyeScale, eyeRadius));
+  d = difference(d, sphere((hp - vec3(-0.6, 0.2, faceDepth))/eyeScale, eyeRadius));
 
   // Mouth with shake effect - opens wider when shaking
   float mouthHeight = 0.05 + iShakeIntensity * 0.4; // Base 0.05, grows to ~0.25 at peak shake
   if (iMouse.z > 0.0)
-    d = difference(d, sdBox(hp - vec3(0.0, -0.4, 1.0), vec3(0.2, 0.1, 0.1)));
+    d = difference(d, sdBox(hp - vec3(0.0, -0.4, faceDepth), vec3(0.2, 0.1, 0.1)));
   else
-    d = difference(d, sdBox(hp - vec3(0.0, -0.4, 1.0), vec3(0.25, mouthHeight, 0.1)));
+    d = difference(d, sdBox(hp - vec3(0.0, -0.4, faceDepth), vec3(0.25, mouthHeight, 0.1)));
 
   vec3 bp = p;
   bp = rotateY(bp, -target.x*0.05);

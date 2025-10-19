@@ -31,7 +31,7 @@ let shakeIntensity = 0;
 let shakeDecay = 0.95;
 
 // Helper function to calculate camera position from orbit angle
-function updateCameraPosition() {
+const updateCameraPosition = () =>  {
   // Calculate camera position in a circle around origin
   const x = Math.sin(cameraOrbitAngle) * cameraDistance + cameraOffset.x;
   const z = Math.cos(cameraOrbitAngle) * cameraDistance;
@@ -54,6 +54,7 @@ const setupShader = (fragmentShader) => {
       iPerspective: { value: 1.0 }, // Start in perspective mode
       iFOV: { value: 75.0 },
       iLightIntensity: { value: 1.0 },
+      iSphereHead: { value: 0.0 }, // 0 = box head, 1 = sphere head
     };
 
   const material = new THREE.ShaderMaterial({
@@ -74,7 +75,7 @@ const setupShader = (fragmentShader) => {
   window.addEventListener('mouseup', () => (uniforms.iMouse.value.z = 0.0));
 }
 
-function start() {
+const start = () => {
   // Setup slider event listeners
   const walkSpeed = document.getElementById('walkSpeed');
   const armSwing = document.getElementById('armSwing');
@@ -83,6 +84,9 @@ function start() {
   const cameraFOVSlider = document.getElementById('cameraFOV');
   const lightIntensitySlider = document.getElementById('lightIntensity');
   const robotRotationSlider = document.getElementById('robotRotation');
+  const shakeButton = document.getElementById('shakeButton');
+  const boxHeadRadio = document.getElementById('boxHead');
+  const sphereHeadRadio = document.getElementById('sphereHead');
 
   walkSpeed.addEventListener('input', (e) => {
     uniforms.iWalkSpeed.value = parseFloat(e.target.value);
@@ -121,7 +125,34 @@ function start() {
   });
   
   // Initialize FOV slider state (enabled by default since perspective is default)
-  cameraFOVSlider.disabled = false;  // Keyboard controls for camera
+  cameraFOVSlider.disabled = false;
+  
+  // Head shape radio buttons
+  boxHeadRadio.addEventListener('change', () => {
+    uniforms.iSphereHead.value = 0.0;
+  });
+  
+  sphereHeadRadio.addEventListener('change', () => {
+    uniforms.iSphereHead.value = 1.0;
+  });
+  
+  // Shake button - works while holding down
+  shakeButton.addEventListener('mousedown', () => {
+    isShaking = true;
+    shakeIntensity = 0.5; // Adjust for stronger/weaker shake
+  });
+  
+  shakeButton.addEventListener('mouseup', () => {
+    isShaking = false;
+    shakeIntensity = 0;
+  });
+  
+  shakeButton.addEventListener('mouseleave', () => {
+    isShaking = false;
+    shakeIntensity = 0;
+  });
+  
+  // Keyboard controls for camera
   window.addEventListener('keydown', (e) => {
     const panSpeed = 0.5;
     const zoomSpeed = 0.5;
@@ -143,7 +174,7 @@ function start() {
       case 'Spacebar':
         // Trigger 3D camera shake
         isShaking = true;
-        shakeIntensity = 0.5; // Adjust for stronger/weaker shake
+        shakeIntensity = 1.2           ; // Adjust for stronger/weaker shake
         break;
     }
     

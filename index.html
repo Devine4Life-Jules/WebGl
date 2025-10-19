@@ -168,6 +168,28 @@
       color: rgba(255, 220, 150, 1);
       font-weight: bold;
     }
+    .control-group .shake-button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+    .control-group .shake-button:hover {
+      background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+    .control-group .shake-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -209,6 +231,23 @@
         <div class="radio-option">
           <input type="radio" id="perspective" name="cameraMode" value="perspective" checked>
           <label for="perspective">Perspective</label>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>Camera Shake</label>
+      <button id="shakeButton" class="shake-button">Shake Camera (Spacebar)</button>
+    </div>
+    <div class="control-group">
+      <label>Head Shape</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" id="boxHead" name="headShape" value="box" checked>
+          <label for="boxHead">Box Head</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="sphereHead" name="headShape" value="sphere">
+          <label for="sphereHead">Sphere Head</label>
         </div>
       </div>
     </div>
