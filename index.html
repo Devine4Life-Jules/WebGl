@@ -10,6 +10,13 @@
       height: 100%;
       overflow: hidden;
       background: black;
+      display: flex;
+      flex-direction: column;
+    }
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
     }
     #c {
       width: 100%;
@@ -40,35 +47,54 @@
       transform: scaleX(0);
     }
     #controls {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 20px;
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-      min-width: 250px;
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.95);
+      padding: 20px 30px;
+      border-top: 2px solid rgba(255, 200, 100, 0.3);
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      max-height: 40vh;
+      overflow-y: auto;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .control-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      min-width: 180px;
+      max-width: 220px;
+    }
+    .column-title {
+      color: rgba(255, 200, 100, 1);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+      border-bottom: 2px solid rgba(255, 200, 100, 0.3);
+      padding-bottom: 8px;
     }
     .control-group {
-      margin-bottom: 15px;
-    }
-    .control-group:last-child {
       margin-bottom: 0;
     }
     .control-group label {
       display: block;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.7);
       font-family: Arial, sans-serif;
-      font-size: 13px;
-      margin-bottom: 8px;
+      font-size: 11px;
+      margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .control-group input[type="range"] {
       width: 100%;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.2);
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
       outline: none;
       -webkit-appearance: none;
       appearance: none;
@@ -77,29 +103,33 @@
     .control-group input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: rgba(255, 200, 100, 0.9);
+      background: rgba(255, 200, 100, 1);
       cursor: pointer;
       transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
     .control-group input[type="range"]::-webkit-slider-thumb:hover {
       background: rgba(255, 220, 150, 1);
-      transform: scale(1.2);
+      transform: scale(1.15);
+      box-shadow: 0 3px 10px rgba(255, 200, 100, 0.5);
     }
     .control-group input[type="range"]::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: rgba(255, 200, 100, 0.9);
+      background: rgba(255, 200, 100, 1);
       cursor: pointer;
       border: none;
       transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
     .control-group input[type="range"]::-moz-range-thumb:hover {
       background: rgba(255, 220, 150, 1);
-      transform: scale(1.2);
+      transform: scale(1.15);
+      box-shadow: 0 3px 10px rgba(255, 200, 100, 0.5);
     }
     .control-group input[type="range"]:disabled {
       opacity: 0.4;
@@ -136,128 +166,156 @@
     }
     .control-group .radio-group {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
     .control-group .radio-option {
       flex: 1;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 10px;
-      background: rgba(255, 200, 100, 0.1);
-      border: 1px solid rgba(255, 200, 100, 0.3);
-      border-radius: 6px;
+      justify-content: center;
+      gap: 5px;
+      padding: 6px 8px;
+      background: rgba(255, 200, 100, 0.08);
+      border: 1px solid rgba(255, 200, 100, 0.25);
+      border-radius: 5px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
     .control-group .radio-option:hover {
-      background: rgba(255, 200, 100, 0.2);
-      border-color: rgba(255, 200, 100, 0.5);
+      background: rgba(255, 200, 100, 0.15);
+      border-color: rgba(255, 200, 100, 0.4);
+      transform: translateY(-1px);
     }
     .control-group .radio-option input[type="radio"] {
       cursor: pointer;
-      accent-color: rgba(255, 200, 100, 0.9);
+      accent-color: rgba(255, 200, 100, 1);
+      margin: 0;
     }
     .control-group .radio-option label {
       margin: 0;
       cursor: pointer;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.8);
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      white-space: nowrap;
     }
     .control-group .radio-option input[type="radio"]:checked + label {
       color: rgba(255, 220, 150, 1);
-      font-weight: bold;
+      font-weight: 600;
+    }
+    .control-group .radio-option:has(input[type="radio"]:checked) {
+      background: rgba(255, 200, 100, 0.2);
+      border-color: rgba(255, 200, 100, 0.6);
     }
     .control-group .shake-button {
       width: 100%;
-      padding: 12px;
+      padding: 10px 12px;
       background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 6px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .control-group .shake-button:hover {
       background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.5);
     }
     .control-group .shake-button:active {
-      transform: translateY(0);
+      transform: translateY(0) scale(0.98);
       box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
     }
   </style>
 </head>
 <body>
-  <canvas id="c"></canvas>
-  <div id="loading">
-    <div class="progress"><div class="progressbar"></div></div>
+  <div id="canvas-container">
+    <canvas id="c"></canvas>
+    <div id="loading">
+      <div class="progress"><div class="progressbar"></div></div>
+    </div>
   </div>
 
   <div id="controls">
-   
-    <div class="control-group">
-      <label for="">use arrow keys to move</label>
-      <label>Speed</label>
-      <input type="range" id="walkSpeed" min="0" max="3" step="0.1" value="1.5">
-    </div>
-    <div class="control-group">
-      <label>Swing</label>
-      <input type="range" id="armSwing" min="0" max="1.5" step="0.05" value="0.75">
-    </div>
-    <div class="control-group">
-      <label>Camera Orbit</label>
-      <input type="range" id="robotRotation" min="-180" max="180" step="5" value="0">
-    </div>
-    <div class="control-group">
-      <label>FOV (Field of View)</label>
-      <input type="range" id="cameraFOV" min="20" max="120" step="5" value="75">
-    </div>
-    <div class="control-group">
-      <label>Light Intensity</label>
-      <input type="range" id="lightIntensity" min="0" max="2" step="0.1" value="1">
-    </div>
-    <div class="control-group">
-      <label>Camera Mode</label>
-      <div class="radio-group">
-        <div class="radio-option">
-          <input type="radio" id="orthographic" name="cameraMode" value="orthographic">
-          <label for="orthographic">Orthographic</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" id="perspective" name="cameraMode" value="perspective" checked>
-          <label for="perspective">Perspective</label>
-        </div>
+    <!-- Animation Column -->
+    <div class="control-column">
+      <div class="column-title">🤖 Animation</div>
+      <div class="control-group">
+        <label>Walk Speed</label>
+        <input type="range" id="walkSpeed" min="0" max="3" step="0.1" value="1.5">
+      </div>
+      <div class="control-group">
+        <label>Arm Swing</label>
+        <input type="range" id="armSwing" min="0" max="1.5" step="0.05" value="0.75">
       </div>
     </div>
-    <div class="control-group">
-      <label>Camera Shake</label>
-      <button id="shakeButton" class="shake-button">Shake Camera (Spacebar)</button>
-    </div>
-    <div class="control-group">
-      <label>Head Shape</label>
-      <div class="radio-group">
-        <div class="radio-option">
-          <input type="radio" id="boxHead" name="headShape" value="box" checked>
-          <label for="boxHead">Box Head</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" id="sphereHead" name="headShape" value="sphere">
-          <label for="sphereHead">Sphere Head</label>
+
+    <!-- Camera Column -->
+    <div class="control-column">
+      <div class="column-title">📷 Camera</div>
+      <div class="control-group">
+        <label>Camera Mode</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="orthographic" name="cameraMode" value="orthographic">
+            <label for="orthographic">Ortho</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="perspective" name="cameraMode" value="perspective" checked>
+            <label for="perspective">Perspective</label>
+          </div>
         </div>
       </div>
+      <div class="control-group">
+        <label>Camera Orbit (Arrow Keys)</label>
+        <input type="range" id="robotRotation" min="-180" max="180" step="5" value="0">
+      </div>
+      <div class="control-group">
+        <label>FOV (Field of View)</label>
+        <input type="range" id="cameraFOV" min="20" max="120" step="5" value="75">
+      </div>
+      <div class="control-group">
+        <button id="shakeButton" class="shake-button">Shake Camera (Spacebar)</button>
+      </div>
     </div>
-    <div class="control-group">
-      <label>Roughness</label>
-      <input type="range" id="roughness" min="0" max="1" step="0.05" value="0.5">
+
+    <!-- Appearance Column -->
+    <div class="control-column">
+      <div class="column-title">🎨 Appearance</div>
+      <div class="control-group">
+        <label>Head Shape</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="boxHead" name="headShape" value="box" checked>
+            <label for="boxHead">Box</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="sphereHead" name="headShape" value="sphere">
+            <label for="sphereHead">Sphere</label>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Roughness</label>
+        <input type="range" id="roughness" min="0" max="1" step="0.05" value="0.5">
+      </div>
+      <div class="control-group">
+        <label>Metallic</label>
+        <input type="range" id="metallic" min="0" max="1" step="0.05" value="0.2">
+      </div>
     </div>
-    <div class="control-group">
-      <label>Metallic</label>
-      <input type="range" id="metallic" min="0" max="1" step="0.05" value="0.2">
+
+    <!-- Lighting Column -->
+    <div class="control-column">
+      <div class="column-title">💡 Lighting</div>
+      <div class="control-group">
+        <label>Light Intensity</label>
+        <input type="range" id="lightIntensity" min="0" max="2" step="0.1" value="1">
+      </div>
     </div>
   </div>
 
