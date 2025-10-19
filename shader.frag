@@ -81,7 +81,6 @@ float scene(vec3 p) {
   vec3 hp = p - vec3(0.0, 4.0, 0.0);
   hp = (vec4(hp, 1.0)*headMat).xyz;
   
-  // Switch between box head and sphere head
   float headShape;
   if (iSphereHead > 0.5) {
     headShape = sphere(hp, 1.3); // Sphere head with radius 1.3
@@ -90,19 +89,15 @@ float scene(vec3 p) {
   }
   d = _union(d, headShape);
 
-  // Eye scaling: blink animation + shake effect (makes eyes bigger when shaking)
   vec3 eyeScale = vec3(1.0);
   eyeScale.y *= 1.0 - smoothstep(0.8, 1.0, noise(t*5.0)); // Blink
   
-  // Adjust eye and mouth depth based on head shape
   float faceDepth = iSphereHead > 0.5 ? 1.25 : 1.0; // Push features forward on sphere head
   
-  // Increase eye size during shake (multiply radius by 1 + shake intensity)
   float eyeRadius = 0.15 * (1.0 + iShakeIntensity * 2.0); // 2.0 = multiplier for effect strength
   d = difference(d, sphere((hp - vec3(0.6, 0.2, faceDepth))/eyeScale, eyeRadius));
   d = difference(d, sphere((hp - vec3(-0.6, 0.2, faceDepth))/eyeScale, eyeRadius));
 
-  // Mouth with shake effect - opens wider when shaking
   float mouthHeight = 0.05 + iShakeIntensity * 0.4; // Base 0.05, grows to ~0.25 at peak shake
   if (iMouse.z > 0.0)
     d = difference(d, sdBox(hp - vec3(0.0, -0.4, faceDepth), vec3(0.2, 0.1, 0.1)));
@@ -186,25 +181,20 @@ vec3 shade(vec3 pos, vec3 n, vec3 eyePos) {
   float dist = length(l);
   l /= dist;
   
-  // Diffuse lighting
   float diff = max(0.0, dot(n, l));
   float shadow = softShadow(pos, l, 0.1, dist, 5.0);
   diff *= shadow;
   
-  // Specular highlights based on metallic and roughness
   vec3 viewDir = normalize(eyePos - pos);
   vec3 reflectDir = reflect(-l, n);
   float specPower = mix(64.0, 4.0, iRoughness); // Rougher = softer highlights
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), specPower);
   
-  // Metallic determines specular color (metallic uses surface color, non-metallic uses white)
   vec3 baseColor = vec3(0.8, 0.7, 0.5); // Robot surface color
   vec3 specularColor = mix(vec3(1.0), baseColor, iMetallic);
   
-  // Specular intensity controlled by roughness (smoother = more specular)
   vec3 specular = spec * specularColor * lightColor * (1.0 - iRoughness * 0.7);
   
-  // Combine diffuse and specular
   c += diff * lightColor + specular * iMetallic;
   return c;
 }
@@ -220,15 +210,11 @@ void main() {
   vec2 pixel = (fragCoord / iResolution.xy)*2.0 - 1.0;
   float asp = iResolution.x / iResolution.y;
   
-  // Ray direction: perspective vs orthographic
   vec3 rd, ro;
   if (iPerspective > 0.5) {
-    // Perspective: rays diverge from camera using FOV
-    // Camera looks at origin (0,0,0) to see both robot and ground
     float fov = iFOV * 3.14159 / 180.0; // Convert degrees to radians
     float scale = tan(fov * 0.5);
     
-    // Create view direction - camera looks slightly down at scene center
     vec3 lookAt = vec3(0.0, 1.5, 0.0); // Look at robot's center (slightly above ground)
     vec3 forward = normalize(lookAt - iCameraPos);
     vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
@@ -237,7 +223,6 @@ void main() {
     rd = normalize(forward + right * pixel.x * scale * asp + up * pixel.y * scale);
     ro = iCameraPos;
   } else {
-    // Orthographic: parallel rays (no FOV)
     rd = normalize(vec3(0.0, 0.0, -1.0));
     ro = iCameraPos + vec3(asp * pixel.x * 5.0, pixel.y * 5.0, 0.0);
   }
